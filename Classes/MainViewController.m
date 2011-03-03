@@ -3,7 +3,7 @@
 //  worth-utility
 //
 //  Created by John Adams on 2/28/11.
-//  Copyright 2011 Twitter. All rights reserved.
+//  Copyright 2011 John Adams. All rights reserved.
 //
 
 //  Adapted from Worth.pl by Jamie Zawinski
@@ -13,13 +13,12 @@
 // only handles stock from one company;                                                                                    
 // assumes all shares vest at the same rate;                                                                               
 // assumes vesting rate is linear;                                                                                         
-// assumes shares vest daily (probably they vest monthly, or even quarterly);                                              
 //
 
 #import "MainViewController.h"
 
-#define PERIOD_DAILY 1
-#define PERIOD_MONTHLY 2
+#define PERIOD_DAILY 0
+#define PERIOD_MONTHLY 1
 
 @implementation MainViewController
 
@@ -73,21 +72,14 @@
 	float curPriceValue			= [defaults floatForKey:@"current_price"];
 	NSInteger sharesheldValue	= [defaults integerForKey:@"shares_held"];
 	NSInteger sharessoldValue	= [defaults integerForKey:@"shares_sold"];
-	NSString *grantDate			= [defaults stringForKey:@"grant_date"];
-	NSString *endDate			= [defaults stringForKey:@"end_date"];
+	NSDate *gDate				= [defaults objectForKey:@"grant_date"];
+	NSDate *veDate				= [defaults objectForKey:@"end_date"];
 	BOOL firstyearValue			= [defaults boolForKey:@"firstyearcliff"];
 	NSInteger periodValue		= [defaults integerForKey:@"periodselected"];
 	
 	float vestedSharesValue = 0;
 
-	// parse the date and calculate number of vested shares. 
-	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-	[dateFormatter setDateFormat:@"MM/dd/yyyy"];
-	[dateFormatter setLenient:YES];
 	NSDate *nowDate = [NSDate date];
-	
-	NSDate *gDate = [dateFormatter dateFromString:grantDate];
-	NSDate *veDate = [dateFormatter dateFromString:endDate];
 	
 	NSTimeInterval edinterval = [nowDate timeIntervalSinceDate: gDate];
 	NSTimeInterval vcinterval = [veDate timeIntervalSinceDate: gDate];

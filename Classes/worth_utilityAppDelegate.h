@@ -3,7 +3,7 @@
 //  worth-utility
 //
 //  Created by John Adams on 2/28/11.
-//  Copyright 2011 Twitter. All rights reserved.
+//  Copyright 2011 John Adams. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
