@@ -25,6 +25,8 @@
 @synthesize firstyearcliff;
 @synthesize period;
 
+@synthesize livestockquote;
+
 #define kDatePickerTag 100
 
 
@@ -42,7 +44,7 @@
 	if ([ shares_held.text intValue ] < [ shares_sold.text intValue])
 		return FALSE;
 	
-	if ([ current_price.text floatValue ] == 0.00 )
+	if ([ current_price.text floatValue ] == 0.00 && livestockquote.isOn == NO )
 		return FALSE;
 	
 	if ([ strike_price.text floatValue ] == 0.00 )
@@ -79,6 +81,7 @@
 	NSDate *grantDate			= [defaults objectForKey:@"grant_date"];
 	NSDate *endDate				= [defaults objectForKey:@"end_date"];
 	BOOL firstyearValue			= [defaults boolForKey:@"firstyearcliff"];
+	BOOL livequoteValue			= [defaults boolForKey:@"livequote"];
 	NSInteger periodValue		= [defaults integerForKey:@"periodselected"];
 	
 	// format strings and populate
@@ -102,14 +105,30 @@
 	 
 	// switches and segmeneted controls
 	firstyearcliff.on = firstyearValue;
+	livestockquote.on = livequoteValue;
 	period.selectedSegmentIndex = periodValue;
 	
 	// Done button is locked out until everything is valid
 	doneBtn.enabled = [self validateForm];
 	
+	[self syncQuoteFields];
+
     self.view.backgroundColor = [UIColor viewFlipsideBackgroundColor];      
 }
 
+- (void) syncQuoteFields { 
+	// called when we toggle live quote or load the view. 
+	if (livestockquote.isOn) { 
+		current_price.enabled = NO;
+		current_price.alpha = 0.3;
+	} else {
+		current_price.enabled = YES;
+		current_price.alpha = 1;
+	}
+}	
+- (IBAction)liveQuoteChanged:(id)sender {
+	[self syncQuoteFields];
+}
 
 - (IBAction)done:(id)sender {
 	// update prefs and close the view
@@ -127,13 +146,15 @@
 
 	[defaults setInteger:period.selectedSegmentIndex forKey:@"periodselected"];
 	[defaults setBool:firstyearcliff.isOn forKey:@"firstyearcliff"];
-	
+	[defaults setBool:livestockquote.isOn forKey:@"livequote"];	
 	[self.delegate flipsideViewControllerDidFinish:self];	
 }
 
 
 -(IBAction)textFieldDoneEditing:(id)sender {
+	// user clicked outside of the field. Revalidate and resign the responder.
 	[sender resignFirstResponder];
+	doneBtn.enabled = [self validateForm];
 }
 
 -(IBAction)backgroundTouched:(id)sender {
@@ -144,7 +165,8 @@
 	[end_date resignFirstResponder];
 	[grant_date resignFirstResponder];
 	[strike_price resignFirstResponder];
-	[current_price resignFirstResponder];
+	[current_price resignFirstResponder];	
+	doneBtn.enabled = [self validateForm];
 }
 
 

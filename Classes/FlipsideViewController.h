@@ -21,6 +21,7 @@
 	IBOutlet UITextField *current_price;
 	IBOutlet UISwitch *firstyearcliff;
 	IBOutlet UISegmentedControl *period;
+	IBOutlet UISwitch *livestockquote;
 	
 	id <FlipsideViewControllerDelegate> delegate;
 }
@@ -34,6 +35,7 @@
 @property (nonatomic, retain) UITextField *strike_price;
 @property (nonatomic, retain) UITextField *current_price;
 @property (nonatomic, retain) UISwitch *firstyearcliff;
+@property (nonatomic, retain) UISwitch *livestockquote;
 @property (nonatomic, retain) UISegmentedControl *period;
 @property (nonatomic, assign) id <FlipsideViewControllerDelegate> delegate;
 
@@ -42,6 +44,8 @@
 - (IBAction)backgroundTouched:(id)sender; 
 - (IBAction)showVestingStartDatePicker:(id)sender;
 - (IBAction)showVestingEndDatePicker:(id)sender;
+- (IBAction)liveQuoteChanged:(id)sender; 
+- (void) syncQuoteFields;
 
 @end
 

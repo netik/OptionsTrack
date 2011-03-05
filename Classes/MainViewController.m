@@ -75,15 +75,16 @@
 	NSDate *gDate				= [defaults objectForKey:@"grant_date"];
 	NSDate *veDate				= [defaults objectForKey:@"end_date"];
 	BOOL firstyearValue			= [defaults boolForKey:@"firstyearcliff"];
+	BOOL livequoteValue			= [defaults boolForKey:@"livequote"];
 	NSInteger periodValue		= [defaults integerForKey:@"periodselected"];
 	
 	float vestedSharesValue = 0;
-
+	
 	NSDate *nowDate = [NSDate date];
 	
 	NSTimeInterval edinterval = [nowDate timeIntervalSinceDate: gDate];
 	NSTimeInterval vcinterval = [veDate timeIntervalSinceDate: gDate];
-	
+
 	int elapsed_days = edinterval / 86400;
 	int vesting_cycle = vcinterval / 86400;
 	
@@ -117,17 +118,60 @@
 	
 	
 	// populate view with current data
+	// do we need to fetch the stock price? 
+	if (livequoteValue) { 
+		NSString *yahooFinance = [NSString stringWithFormat:@"http://download.finance.yahoo.com/d/quotes.csv?s=%@&f=sl1d1t1c1ohgv&e=.csv", tickerValue];
+		NSURLRequest *theRequest = [ NSURLRequest requestWithURL:[NSURL URLWithString:yahooFinance]
+												   cachePolicy:NSURLRequestUseProtocolCachePolicy
+											   timeoutInterval:5.0];
+		
+		NSError        *error = nil;
+		NSURLResponse  *response = nil;
+		NSURLConnection *theConnection=[[NSURLConnection alloc] initWithRequest:theRequest delegate:self];
+		NSLog(@"\n\nCONNECTION:   %@", theConnection);
+		
+		NSData *returnData = [NSURLConnection sendSynchronousRequest:theRequest returningResponse: &response error:&error]; 
+		if (!error) { 
+			NSString *tickerString = [[NSString alloc] initWithData:returnData encoding:NSASCIIStringEncoding];   
+			NSLog(@"\n\nQUOTE:   %@", tickerString);
+		
+			// yahoo quotes look like this
+			// "MSFT",25.9525,"3/4/2011","4:00pm",-0.2475,26.22,26.24,25.80,70415600
+			NSArray *chunks = [tickerString componentsSeparatedByString: @","];
+			if ([[chunks objectAtIndex:2] isEqualToString:@"\"N/A\""]) { 
+				valueline.text = @"Error: Symbol does not exist.";
+				valueline_togo.text = @"";				
+			} else { 
+				NSLog(@"Price %@", [chunks objectAtIndex:1]);
+				curPriceValue = [[chunks objectAtIndex:1] floatValue];	
+				valueline.text = [NSString stringWithFormat:@"@ %.3f per share, market, as of %@ at %@", 
+									curPriceValue,
+									[[chunks objectAtIndex:2] stringByReplacingOccurrencesOfString:@"\"" withString:@""],
+									[[chunks objectAtIndex:3] stringByReplacingOccurrencesOfString:@"\"" withString:@""]];
+				valueline_togo.text = [NSString stringWithFormat:@"Leave now and you walk away from %@", 
+									   [currencyFormatter stringFromNumber:[NSNumber numberWithFloat:((sharesheldValue - sharessoldValue - vestedSharesValue) * curPriceValue)  ]]];
+
+			}
+		} else {
+			valueline.text = @"Unable to fetch current market price from Internet.";
+			valueline_togo.text = @"";
+
+		}
+	} else {
+		valueline.text = [NSString stringWithFormat:@"@ %.3f per share, manually entered", curPriceValue];
+		valueline_togo.text = [NSString stringWithFormat:@"Leave now and you walk away from %@", 
+							   [currencyFormatter stringFromNumber:[NSNumber numberWithFloat:((sharesheldValue - sharessoldValue - vestedSharesValue) * curPriceValue)  ]]];
+	}
+	
 	ticker.text = tickerValue;
 	curval.text = [currencyFormatter stringFromNumber:[NSNumber numberWithFloat:(float)(curPriceValue * (vestedSharesValue - sharessoldValue))]];
-	valueline.text = [NSString stringWithFormat:@"@ %.2f per share", curPriceValue];
+
 	exercisecost.text = [currencyFormatter stringFromNumber:[NSNumber numberWithFloat:(float)(strikePriceValue * (vestedSharesValue - sharessoldValue))]];
 	progresspcnt.text = [percentStyle stringFromNumber:[NSNumber numberWithFloat:(float)(vestedSharesValue / sharesheldValue)]];
 	progressline.text = [NSString stringWithFormat:@"%@ of %@", 
 						 [decimalStyle stringFromNumber:[NSNumber numberWithFloat:vestedSharesValue]], 
 						 [decimalStyle stringFromNumber:[NSNumber numberWithInt:sharesheldValue]]];
 	
-	valueline_togo.text = [NSString stringWithFormat:@"Leave now and you walk away from %@", 
-						   [currencyFormatter stringFromNumber:[NSNumber numberWithFloat:((sharesheldValue - sharessoldValue - vestedSharesValue) * curPriceValue)  ]]];
 	
 	// done with these...
 	[currencyFormatter dealloc];
