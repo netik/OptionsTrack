@@ -29,6 +29,7 @@
 @synthesize exercisecost;
 @synthesize progresspcnt;
 @synthesize progressline;
+@synthesize progresstimeline;
 
 - (IBAction)showInfo:(id)sender {    
 	
@@ -61,6 +62,54 @@
 		[self presentModalViewController:controller animated:NO]; 
 		[controller release];
 	}
+}
+
+- (NSString *) secsToString:(int)seconds {
+	NSString *result = @"";
+	
+	int days_per_year = 365;
+	int days_per_month = (days_per_year / 12);
+	
+	int min_to_go    = (seconds / 60);
+	int hours_to_go  = (min_to_go / 60);
+	int days_to_go   = (hours_to_go / 24);
+	
+	int years_to_go  = (days_to_go / days_per_year);
+	int months_to_go = (days_to_go / days_per_month);
+	
+	months_to_go -= (years_to_go * 12);
+	days_to_go   -= (years_to_go * days_per_year);
+	if (months_to_go < 0) { months_to_go = 0; }
+	
+	days_to_go -= months_to_go * days_per_month;
+	if (days_to_go < 0) { days_to_go = 0; }
+	
+	// kludge to avoid "1 month 30 days", which, while correct, sucks.                      
+	if (days_to_go > 29) {
+		days_to_go -= 30;
+		months_to_go += 1;
+		if (months_to_go >= 12) {
+			months_to_go -= 12;
+			years_to_go += 1;
+		}
+	}
+	
+	if ( years_to_go > 0 ) {
+		result = [result stringByAppendingString:[NSString stringWithFormat:@" %d year", years_to_go]];
+		if ( years_to_go != 1 ) { result = [result stringByAppendingString:@"s"]; };
+	}
+	
+	if ( months_to_go > 0 ) {
+		result = [result stringByAppendingString:[NSString stringWithFormat:@" %d month", months_to_go]];
+		if ( months_to_go != 1 ) { result = [result stringByAppendingString:@"s"]; };
+	}
+	
+	if ( days_to_go > 0 ) {
+		result = [result stringByAppendingString:[NSString stringWithFormat:@" %d day", days_to_go]];
+		if ( days_to_go != 1 ) { result = [result stringByAppendingString:@"s"]; };
+		
+	}
+	return result;
 }
 
 - (void)calculateStock { 
@@ -129,7 +178,6 @@
 		NSURLResponse  *response = nil;
 		NSURLConnection *theConnection=[[NSURLConnection alloc] initWithRequest:theRequest delegate:self];
 		NSLog(@"\n\nCONNECTION:   %@", theConnection);
-		
 		NSData *returnData = [NSURLConnection sendSynchronousRequest:theRequest returningResponse: &response error:&error]; 
 		if (!error) { 
 			NSString *tickerString = [[NSString alloc] initWithData:returnData encoding:NSASCIIStringEncoding];   
@@ -157,6 +205,7 @@
 			valueline_togo.text = @"";
 
 		}
+
 	} else {
 		valueline.text = [NSString stringWithFormat:@"@ %.3f per share, manually entered", curPriceValue];
 		valueline_togo.text = [NSString stringWithFormat:@"Leave now and you walk away from %@", 
@@ -172,6 +221,7 @@
 						 [decimalStyle stringFromNumber:[NSNumber numberWithFloat:vestedSharesValue]], 
 						 [decimalStyle stringFromNumber:[NSNumber numberWithInt:sharesheldValue]]];
 	
+	progresstimeline.text = [self secsToString:(vcinterval-edinterval)];
 	
 	// done with these...
 	[currencyFormatter dealloc];

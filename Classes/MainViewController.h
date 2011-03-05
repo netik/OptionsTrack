@@ -18,6 +18,7 @@
 
 	IBOutlet UILabel *progresspcnt;
 	IBOutlet UILabel *progressline;	
+	IBOutlet UILabel *progresstimeline;	
 	
 }
 
@@ -29,9 +30,12 @@
 @property (nonatomic, retain) UILabel *exercisecost;
 @property (nonatomic, retain) UILabel *progresspcnt;
 @property (nonatomic, retain) UILabel *progressline;
+@property (nonatomic, retain) UILabel *progresstimeline;
 
 
 - (IBAction)showInfo:(id)sender;
 - (void)calculateStock;
+
+- (NSString *) secsToString:(int)seconds;
 
 @end

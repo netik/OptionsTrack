@@ -1,0 +1,30 @@
+OptionsTrack is an application for iPhone running iOS 4.x software.
+
+It is designed to track the value of a single stock over time, such as
+an employee incentive stock option. 
+
+It is based largely on worth.pl, written by Jamie Zawinski at 
+http://www.jwz.org/hacks/worth.pl
+
+As he says...
+
+Do you hate your job? Are you only still there because you're waiting
+to vest? I feel your pain, brother. The only thing that kept me from
+leaving Netscape in 1997 and walking away from a dumptruck full of
+cash in frustration was this script. I ran this every morning for at
+least a year: it prints out the following motivational message:
+
+Today's NSCP price is $__.__; your total unsold shares are worth $____. 
+You are __._% vested, for a total of ____ vested unsold shares
+($____). 
+
+But if you quit today, you will walk away from $____.  
+Hang in there, little trooper! Only _ years _ months _ days to go!
+
+It's amazing how this script can put it all back into perspective and
+keep you from going postal and strangling someone. Fill in your
+numbers, and let it remind you not to do something you'll regret
+later.
+
+
+

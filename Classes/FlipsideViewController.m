@@ -27,6 +27,7 @@
 
 @synthesize livestockquote;
 
+
 #define kDatePickerTag 100
 
 
